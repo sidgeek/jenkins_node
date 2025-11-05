@@ -1,0 +1,10 @@
+node_modules
+.git
+.gitignore
+Dockerfile
+Jenkinsfile
+start.md
+*.log
+*.md
+npm-debug.log*
+pnpm-debug.log*

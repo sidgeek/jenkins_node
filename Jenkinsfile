@@ -8,6 +8,9 @@ node {
     stage('Checkout'){
         // Preload GitHub SSH host keys to satisfy strict host key checking
         echo "test"
+        sh '''
+          docker -v
+        '''
         // sh '''
         //   set -euo pipefail
         //   mkdir -p "$HOME/.ssh"

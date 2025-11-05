@@ -8,6 +8,14 @@ node {
     def api_base = "http://localhost"
 
     stage('Checkout'){
+        // Preload GitHub SSH host keys to satisfy strict host key checking
+        sh '''
+          set -euo pipefail
+          mkdir -p "$HOME/.ssh"
+          touch "$HOME/.ssh/known_hosts"
+          # Import GitHub host keys (rsa/ecdsa/ed25519). If ssh-keyscan missing, this will no-op.
+          ssh-keyscan -T 5 -H -t rsa,ecdsa,ed25519 github.com >> "$HOME/.ssh/known_hosts" || true
+        '''
         checkout scm
         rev_no = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
         image_full = "${image_name}:${rev_no}"
@@ -41,7 +49,7 @@ node {
           curl --silent --unix-socket ${docker_sock} -X DELETE "${api_base}/containers/node-demo-test?force=true" || true
 
           # 创建并映射端口 3001->3000
-          cat > /tmp/create-node-demo-test.json <<'EOF'
+          cat > /tmp/create-node-demo-test.json <<EOF
           {
             "Image": "${image_full}",
             "Cmd": ["node","app.js"],
@@ -77,7 +85,7 @@ EOF
           curl --silent --unix-socket ${docker_sock} -X DELETE "${api_base}/containers/node-demo?force=true" || true
 
           # 创建并映射端口 3000->3000，后台运行
-          cat > /tmp/create-node-demo.json <<'EOF'
+          cat > /tmp/create-node-demo.json <<EOF
           {
             "Image": "${image_full}",
             "Cmd": ["node","app.js"],

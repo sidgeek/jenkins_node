@@ -4,7 +4,7 @@ node {
     def image_name = "jenkins-node-demo"
     def image_full = ""
     // 使用“工具箱容器”运行 docker CLI，并复用宿主机 docker.sock
-    def dockerArgs = "-v /var/run/docker.sock:/var/run/docker.sock"
+    def dockerArgs = "-v /var/run/docker.sock:/var/run/docker.sock:z"
 
     stage('Checkout'){
         // 预置 GitHub host key，避免严格校验失败

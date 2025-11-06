@@ -34,7 +34,7 @@ node {
           docker run -d \
             --name jn-app \
             --restart unless-stopped \
-            -p 3000:3000 \
+            -p 3006:3006 \
             ${image_name}:${rev_no}
 
           # 简单健康检查与镜像确认

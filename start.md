@@ -186,3 +186,38 @@ node {
   volumes:
     jenkins_home:
   ```
+## 一键启动 Jenkins（含 Docker CLI）
+
+本仓库提供 `jenkins.Dockerfile` 与 `docker-compose.yml`，可在宿主机上一次性启动 Jenkins，并在容器内直接使用 Docker CLI，复用宿主机的 `docker.sock`。
+
+### 前置条件
+- 宿主机已安装 Docker 与 Docker Compose（Docker Desktop 或 `docker compose` 插件）。
+- 宿主机 Docker 守护进程正在运行。
+
+### 启动步骤
+1. 构建并启动 Jenkins：
+   - `docker compose up -d`
+2. 观察日志与健康检查：
+   - `docker compose logs -f jenkins`
+   - 健康检查会访问 `http://localhost:8080/login`，若成功则容器处于 healthy。
+3. 获取初始管理员密码：
+   - `docker exec -it jenkins bash -lc 'cat /var/jenkins_home/secrets/initialAdminPassword'`
+4. 打开浏览器访问 Jenkins：
+   - `http://<宿主机IP>:8080/`
+
+### 端口与挂载说明
+- 端口：默认映射 `8080:8080`（Web UI）、`50000:50000`（JNLP Agent，可按需移除）。
+- 数据：使用命名卷 `jenkins_home` 持久化 Jenkins 数据。
+- Docker：挂载宿主机 `/var/run/docker.sock` 到容器，容器内设置 `DOCKER_HOST=unix:///var/run/docker.sock` 强制走本地 Unix 套接字。
+
+### SELinux 与权限
+- 已在 compose 中添加 `:z`（共享标签）与 `security_opt: label=disable`，通常可避免 SELinux 的套接字访问限制。
+- 如仍遇到权限问题，可临时添加 `privileged: true` 验证，或改用非 root 并通过 `group_add` 加入 docker.sock 的组 GID（需要在 compose 文件中手动填写 GID）。
+
+### 停止与清理
+- 停止：`docker compose down`
+- 停止并移除数据卷（慎用）：`docker compose down -v`
+
+### 定制
+- 若需最新 Docker CLI，可在 `jenkins.Dockerfile` 中改为安装 `docker-ce-cli`（Docker 官方 apt 源）。
+- 若不需要 JNLP 端口，删除 compose 中的 `50000:50000` 映射。

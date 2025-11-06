@@ -70,10 +70,13 @@ node {
         if (!dockerReady) {
             echo '跳过 Build Image：docker 未就绪'
         } else {
-            // 在工具箱容器 docker:24-cli 中执行 docker CLI
-            docker.image('docker:24-cli').inside(dockerArgs) {
-                sh 'docker --version'
-            }
+            // 直接在 Jenkins 容器中使用已安装的 docker CLI 构建镜像
+            sh """
+              set -euo pipefail
+              docker --version
+              docker build -t ${image_full} -f Dockerfile --build-arg REV_NO=${rev_no} .
+              docker tag ${image_full} ${image_name}:latest
+            """
         }
     }
 }

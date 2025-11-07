@@ -8,7 +8,20 @@ node {
     stage('Checkout'){
         checkout scm
         rev_no = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
-        branch_name = env.BRANCH_NAME ?: sh(returnStdout: true, script: "git rev-parse --abbrev-ref HEAD").trim()
+        // 兼容不同类型的 Jenkins 作业：优先环境变量，其次从远端分支包含关系推断
+        branch_name = sh(returnStdout: true, script: '''
+          set -euo pipefail
+          if [ -n "${BRANCH_NAME:-}" ]; then
+            echo "$BRANCH_NAME"
+          elif [ -n "${GIT_BRANCH:-}" ]; then
+            echo "${GIT_BRANCH#origin/}"
+          elif [ -n "${CHANGE_BRANCH:-}" ]; then
+            echo "$CHANGE_BRANCH"  # PR 构建分支
+          else
+            # 从包含当前提交的远端分支推断，取第一个匹配
+            git branch -r --contains HEAD | sed -n '1{s#^ *origin/##;p}'
+          fi
+        ''').trim()
         image_full = "${image_name}:${branch_name}-${rev_no}"
         echo "BRANCH=${branch_name}, REV_NO=${rev_no}, IMAGE=${image_full}"
     }

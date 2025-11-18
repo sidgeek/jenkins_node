@@ -21,9 +21,6 @@ RUN install -m 0755 -d /etc/apt/keyrings \
     && apt-get install -y --no-install-recommends docker-ce-cli \
     && rm -rf /var/lib/apt/lists/*
 
-# Force Docker CLI to use the host unix socket by default
-ENV DOCKER_HOST=unix:///var/run/docker.sock
-
 # Optional: preload GitHub host keys to ease SSH known_hosts verification
 RUN mkdir -p /root/.ssh \
     && touch /root/.ssh/known_hosts \

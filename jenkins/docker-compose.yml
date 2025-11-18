@@ -10,12 +10,10 @@ services:
       - "50000:50000" # JNLP agent port (optional)
     volumes:
       - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock:z
-    environment:
-      - DOCKER_HOST=unix:///var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock
+
     restart: unless-stopped
-    security_opt:
-      - label=disable
+
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8080/login || exit 1"]
       interval: 30s

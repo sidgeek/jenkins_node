@@ -21,6 +21,16 @@ RUN install -m 0755 -d /etc/apt/keyrings \
     && apt-get install -y --no-install-recommends docker-ce-cli \
     && rm -rf /var/lib/apt/lists/*
 
+RUN install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && chmod a+r /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x $(. /etc/os-release && echo $VERSION_CODENAME) main" > /etc/apt/sources.list.d/nodesource.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends nodejs \
+    && corepack enable \
+    && corepack prepare pnpm@latest --activate \
+    && rm -rf /var/lib/apt/lists/*
+
 # Force Docker CLI to use the host unix socket by default
 ENV DOCKER_HOST=unix:///var/run/docker.sock
 

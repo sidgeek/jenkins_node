@@ -23,13 +23,7 @@ RUN install -m 0755 -d /etc/apt/keyrings \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; arch="$(uname -m)"; \
-    case "$arch" in \
-      x86_64) node_arch="x64" ;; \
-      aarch64) node_arch="arm64" ;; \
-      armv7l) node_arch="armv7l" ;; \
-      *) echo "Unsupported architecture: $arch"; exit 1 ;; \
-    esac; \
-    node_version="v20.17.0"; \
+    node_version="v22.12.0"; \
     url="https://mirrors.tencent.com/nodejs-release/${node_version}/node-${node_version}-linux-${node_arch}.tar.xz"; \
     alt="https://nodejs.org/dist/${node_version}/node-${node_version}-linux-${node_arch}.tar.xz"; \
     curl -fsSL "$url" -o /tmp/node.tar.xz || curl -fsSL "$alt" -o /tmp/node.tar.xz; \

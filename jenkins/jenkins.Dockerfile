@@ -10,6 +10,7 @@ RUN apt-get update \
        ca-certificates \
        curl \
        gnupg \
+       xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Add Docker official apt repo for CLI and install docker-ce-cli
@@ -20,6 +21,27 @@ RUN install -m 0755 -d /etc/apt/keyrings \
     && apt-get update \
     && apt-get install -y --no-install-recommends docker-ce-cli \
     && rm -rf /var/lib/apt/lists/*
+
+RUN set -eux; arch="$(uname -m)"; \
+    case "$arch" in \
+      x86_64) node_arch="x64" ;; \
+      aarch64) node_arch="arm64" ;; \
+      armv7l) node_arch="armv7l" ;; \
+      *) echo "Unsupported architecture: $arch"; exit 1 ;; \
+    esac; \
+    node_version="v20.17.0"; \
+    url="https://mirrors.tencent.com/nodejs-release/${node_version}/node-${node_version}-linux-${node_arch}.tar.xz"; \
+    alt="https://nodejs.org/dist/${node_version}/node-${node_version}-linux-${node_arch}.tar.xz"; \
+    curl -fsSL "$url" -o /tmp/node.tar.xz || curl -fsSL "$alt" -o /tmp/node.tar.xz; \
+    mkdir -p /usr/local/lib/nodejs; \
+    tar -xJf /tmp/node.tar.xz -C /usr/local/lib/nodejs; \
+    ln -sf /usr/local/lib/nodejs/node-${node_version}-linux-${node_arch}/bin/node /usr/local/bin/node; \
+    ln -sf /usr/local/lib/nodejs/node-${node_version}-linux-${node_arch}/bin/npm /usr/local/bin/npm; \
+    ln -sf /usr/local/lib/nodejs/node-${node_version}-linux-${node_arch}/bin/npx /usr/local/bin/npx; \
+    ln -sf /usr/local/lib/nodejs/node-${node_version}-linux-${node_arch}/bin/corepack /usr/local/bin/corepack; \
+    rm -f /tmp/node.tar.xz; \
+    npm install -g pnpm; \
+    ln -sf /usr/local/lib/nodejs/node-${node_version}-linux-${node_arch}/bin/pnpm /usr/local/bin/pnpm
 
 # Optional: preload GitHub host keys to ease SSH known_hosts verification
 RUN mkdir -p /root/.ssh \
